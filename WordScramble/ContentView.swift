@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     
+    @State private var score = 0
+    
     var body: some View {
         NavigationView{
             VStack{
@@ -23,11 +25,21 @@ struct ContentView: View {
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .autocapitalization(.none)
                     .padding()
+                Button(action: {
+                    self.startGame()
+                }, label: {
+                    Text("Start a new game.")
+                })
+                .padding()
+                Text("Score: \(score)")
+                    .bold()
+                    .font(.title)
                 
                 List(usedWords, id: \.self){
                     Image(systemName: "\($0.count).circle")
                     Text($0)
                 }
+                
             }
             .navigationBarTitle(rootWord)
             .onAppear(perform: startGame)
@@ -38,7 +50,13 @@ struct ContentView: View {
     }
     func addNewWord() {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard answer.count > 0 else{
+        
+        guard answer.count > 3 else{
+            wordError(title: "Too short of a word", message: "Must be more than 3 letters")
+            return
+        }
+        guard rootWord != answer else{
+            wordError(title: "Can't be the same word", message: "Try to find another word")
             return
         }
         guard isOriginal(word: answer) else{
@@ -55,6 +73,7 @@ struct ContentView: View {
         }
         usedWords.insert(answer, at: 0)
         newWord = ""
+        score+=answer.count
     }
     
     func startGame(){
